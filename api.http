@@ -1,3 +1,11 @@
 GET http://localhost:8000/tasks
 ###
 GET http://localhost:8000/tasks/2
+###
+POST http://localhost:8000/tasks
+Content-Type: application/json
+
+{
+    "title": "Learn how POST requests work",
+    "difficult": "medium"
+}

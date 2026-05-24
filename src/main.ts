@@ -1,6 +1,7 @@
 import express from "express";
 
 const app = express();
+app.use(express.json());
 const port = 8000;
 
 interface Task {
@@ -36,4 +37,19 @@ app.get(`/tasks/:id`, (req, res) => {
     }
 
     res.json(foundTask);   
+});
+
+app.post(`/tasks`, (req, res) => {
+
+    const clientData = req.body;
+
+    const newTask = {
+        id: tasks.length + 1,
+        title: clientData.title,
+        difficult: clientData.difficult,
+        completed: false,
+    };
+
+    tasks.push(newTask);
+    res.status(201).json(newTask);
 });
