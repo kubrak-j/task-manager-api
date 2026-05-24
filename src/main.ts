@@ -24,6 +24,16 @@ app.listen(8000, () => {
 });
 
 app.get(`/tasks`, (req, res) => {
-
     res.json(tasks);
+});
+
+app.get(`/tasks/:id`, (req, res) => {
+    const taskId : number = Number(req.params.id);
+    const foundTask = tasks.find(item => item.id === taskId);
+        
+    if(!foundTask){
+        return res.status(404).json({message: "Task not found"});
+    }
+
+    res.json(foundTask);   
 });
