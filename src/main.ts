@@ -29,7 +29,7 @@ app.get(`/tasks`, (req, res) => {
 });
 
 app.get(`/tasks/:id`, (req, res) => {
-    const taskId : number = Number(req.params.id);
+    const taskId = Number(req.params.id);
     const foundTask = tasks.find(item => item.id === taskId);
         
     if(!foundTask){
@@ -52,4 +52,22 @@ app.post(`/tasks`, (req, res) => {
 
     tasks.push(newTask);
     res.status(201).json(newTask);
+});
+
+app.patch(`/tasks/:id`, (req, res) => {
+
+    const clientData = req.body;
+
+    const taskId = Number(req.params.id);
+
+    const foundTask = tasks.find(item => item.id === taskId);
+
+    if(!foundTask){
+        return res.status(404).json({message: "Task not found"});
+    }
+
+    foundTask.completed = clientData.completed;
+
+    res.json(foundTask);
+    
 });

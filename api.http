@@ -9,3 +9,10 @@ Content-Type: application/json
     "title": "Learn how POST requests work",
     "difficult": "medium"
 }
+###
+PATCH http://localhost:8000/tasks/6
+Content-Type: application/json
+
+{
+    "completed": true
+}
