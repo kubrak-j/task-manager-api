@@ -10,7 +10,7 @@ A modern, type-safe REST API for managing tasks. This is a backend-focused portf
 
 ## 🛠️ Features (In Progress)
 - [x] Basic HTTP Server Setup
-- [ ] CRUD operations for Tasks (GET, POST, PATCH, DELETE)
+- [x] CRUD operations for Tasks (GET, POST, PATCH, DELETE)
 - [ ] Data validation using Zod
 - [ ] Persistent storage with PostgreSQL & Prisma
 - [ ] Docker integration

@@ -71,3 +71,20 @@ app.patch(`/tasks/:id`, (req, res) => {
     res.json(foundTask);
     
 });
+
+app.delete(`/tasks/:id`, (req, res) => {
+
+    const taskId = Number(req.params.id);
+
+    const foundTask = tasks.find(item => item.id === taskId);
+
+    const foundIndex = tasks.findIndex(item => item.id === taskId);
+
+    if(foundIndex === -1){
+        return res.status(404).json({message: "Task not found"});
+    }
+
+    tasks.splice(foundIndex, 1)
+
+    res.json(foundTask);
+});

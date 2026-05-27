@@ -16,3 +16,5 @@ Content-Type: application/json
 {
     "completed": true
 }
+###
+DELETE http://localhost:8000/tasks/5
