@@ -10,11 +10,11 @@ Content-Type: application/json
     "difficult": "medium"
 }
 ###
-PATCH http://localhost:8000/tasks/6
+PATCH http://localhost:8000/tasks/1
 Content-Type: application/json
 
 {
     "completed": true
 }
 ###
-DELETE http://localhost:8000/tasks/5
+DELETE http://localhost:8000/tasks/1

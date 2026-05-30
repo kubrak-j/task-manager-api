@@ -1,90 +1,96 @@
 import express from "express";
+import { prisma } from './prisma.js';
+import { Prisma } from '@prisma/client';
 
 const app = express();
 app.use(express.json());
 const port = 8000;
 
-interface Task {
-    id: number;
-    title: string;
-    difficult: string;
-    completed: boolean;
-};
-
-const tasks: Task[] = [
-    {id: 1, title: `walk the dog`, difficult: `easy`, completed: false},
-    {id: 2, title: `go to the gym`, difficult: `hard`, completed: false},
-    {id: 3, title: `take a shower`, difficult: `easy`, completed: false},
-    {id: 4, title: `read a chapter of book`, difficult: `medium`, completed: false},
-    {id: 5, title: `practice French`, difficult: `hard`, completed: false}
-];
-
-app.listen(8000, () => {
+app.listen(port, () => {
     console.log(`The server is running`);
     console.log(`listening on port ${port}`);
 });
 
-app.get(`/tasks`, (req, res) => {
-    res.json(tasks);
-});
-
-app.get(`/tasks/:id`, (req, res) => {
-    const taskId = Number(req.params.id);
-    const foundTask = tasks.find(item => item.id === taskId);
-        
-    if(!foundTask){
-        return res.status(404).json({message: "Task not found"});
+app.get(`/tasks`, async (req, res) => {
+    try {
+        const allTasks = await prisma.task.findMany();
+        res.json(allTasks);
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
     }
-
-    res.json(foundTask);   
 });
 
-app.post(`/tasks`, (req, res) => {
-
-    const clientData = req.body;
-
-    const newTask = {
-        id: tasks.length + 1,
-        title: clientData.title,
-        difficult: clientData.difficult,
-        completed: false,
-    };
-
-    tasks.push(newTask);
-    res.status(201).json(newTask);
+app.get(`/tasks/:id`, async (req, res) => {
+    try {
+        const taskId = Number(req.params.id);
+        const foundTask = await prisma.task.findUnique({ 
+            where: { 
+                id: taskId 
+            } 
+        });
+        if(foundTask === null){
+            return res.status(404).json({message: "Task not found"});
+        }
+        res.json(foundTask);  
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }   
 });
 
-app.patch(`/tasks/:id`, (req, res) => {
+app.post(`/tasks`, async (req, res) => {
+    try {
+        const clientData = req.body;
 
-    const clientData = req.body;
+        const newTask = await prisma.task.create({ 
+            data: { 
+                title: clientData.title,
+                difficult: clientData.difficult,
+                completed: false 
+            } 
+        });
 
-    const taskId = Number(req.params.id);
-
-    const foundTask = tasks.find(item => item.id === taskId);
-
-    if(!foundTask){
-        return res.status(404).json({message: "Task not found"});
+        res.status(201).json(newTask);
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
     }
-
-    foundTask.completed = clientData.completed;
-
-    res.json(foundTask);
-    
 });
 
-app.delete(`/tasks/:id`, (req, res) => {
-
-    const taskId = Number(req.params.id);
-
-    const foundTask = tasks.find(item => item.id === taskId);
-
-    const foundIndex = tasks.findIndex(item => item.id === taskId);
-
-    if(foundIndex === -1){
-        return res.status(404).json({message: "Task not found"});
+app.patch(`/tasks/:id`, async (req, res) => {
+    try {
+        const clientData = req.body;
+        const taskId = Number(req.params.id);
+        const patchedTask = await prisma.task.update({
+            where: {
+                id: taskId,
+            },
+            data: {
+                completed: clientData.completed
+            }
+        });
+        res.json(patchedTask);
+    } catch (error) {
+        if(error instanceof Prisma.PrismaClientKnownRequestError){
+            if(error.code === `P2025`) {
+                return res.status(404).json({ message: "Task not found" });
+            }
+        }
+        res.status(500).json({ message: "Internal server error" });
     }
+});
 
-    tasks.splice(foundIndex, 1)
-
-    res.json(foundTask);
+app.delete(`/tasks/:id`, async (req, res) => {
+    try {
+        const taskId = Number(req.params.id);
+        const deletedTask = await prisma.task.delete({
+            where: { id: taskId },
+        });
+        res.json(deletedTask);
+    } catch (error) {
+        if(error instanceof Prisma.PrismaClientKnownRequestError){
+            if(error.code === `P2025`) {
+                return res.status(404).json({ message: "Task not found" });
+            }
+        }
+        res.status(500).json({ message: "Internal server error" });
+    }
 });
