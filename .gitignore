@@ -10,9 +10,11 @@ build/
 .env
 .env.local
 .env.*.local
+.env.test
 
 # Prisma
 .prisma/
+src/generated/prisma/
 
 # Logs
 *.log
@@ -22,6 +24,7 @@ yarn-error.log*
 
 # IDE
 .idea/
+.vscode/
 .vscode/settings.json
 .vscode/launch.json
 

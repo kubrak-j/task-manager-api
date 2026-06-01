@@ -1,6 +1,7 @@
 import express from "express";
 import { prisma } from './prisma.js';
 import { Prisma } from '@prisma/client';
+import * as z from "zod";
 
 const app = express();
 app.use(express.json());
@@ -9,6 +10,15 @@ const port = 8000;
 app.listen(port, () => {
     console.log(`The server is running`);
     console.log(`listening on port ${port}`);
+});
+
+const postTaskSchema = z.object({
+    title: z.string(),
+    difficult: z.string(),
+});
+
+const patchTaskSchema = z.object({
+    completed: z.boolean(),
 });
 
 app.get(`/tasks`, async (req, res) => {
@@ -25,7 +35,7 @@ app.get(`/tasks/:id`, async (req, res) => {
         const taskId = Number(req.params.id);
         const foundTask = await prisma.task.findUnique({ 
             where: { 
-                id: taskId 
+                id: taskId
             } 
         });
         if(foundTask === null){
@@ -39,13 +49,17 @@ app.get(`/tasks/:id`, async (req, res) => {
 
 app.post(`/tasks`, async (req, res) => {
     try {
-        const clientData = req.body;
+        const parsed = postTaskSchema.safeParse(req.body);
+
+        if(!parsed.success){
+            return res.status(400).json({ message: parsed.error.issues });
+        }
 
         const newTask = await prisma.task.create({ 
             data: { 
-                title: clientData.title,
-                difficult: clientData.difficult,
-                completed: false 
+                title: parsed.data.title,
+                difficult: parsed.data.difficult,
+                completed: false,
             } 
         });
 
@@ -57,14 +71,17 @@ app.post(`/tasks`, async (req, res) => {
 
 app.patch(`/tasks/:id`, async (req, res) => {
     try {
-        const clientData = req.body;
+        const parsed = patchTaskSchema.safeParse(req.body);
+        if(!parsed.success){
+            return res.status(400).json({message: parsed.error.issues});
+        }
         const taskId = Number(req.params.id);
         const patchedTask = await prisma.task.update({
             where: {
                 id: taskId,
             },
             data: {
-                completed: clientData.completed
+                completed: parsed.data.completed
             }
         });
         res.json(patchedTask);
@@ -82,7 +99,9 @@ app.delete(`/tasks/:id`, async (req, res) => {
     try {
         const taskId = Number(req.params.id);
         const deletedTask = await prisma.task.delete({
-            where: { id: taskId },
+            where: { 
+                id: taskId 
+            },
         });
         res.json(deletedTask);
     } catch (error) {
