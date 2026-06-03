@@ -14,12 +14,14 @@ app.listen(port, () => {
 
 const postTaskSchema = z.object({
     title: z.string(),
-    difficult: z.string(),
+    difficult: z.enum([`easy`, `medium`, `hard`]),
 });
 
 const patchTaskSchema = z.object({
+    title: z.string(),
+    difficult: z.enum([`easy`, `medium`, `hard`]),
     completed: z.boolean(),
-});
+}).partial();
 
 app.get(`/tasks`, async (req, res) => {
     try {
@@ -75,14 +77,15 @@ app.patch(`/tasks/:id`, async (req, res) => {
         if(!parsed.success){
             return res.status(400).json({message: parsed.error.issues});
         }
+        const updateData = Object.fromEntries(
+            Object.entries(parsed.data).filter(([_, value]) => value !== undefined ),
+        );
         const taskId = Number(req.params.id);
         const patchedTask = await prisma.task.update({
             where: {
                 id: taskId,
             },
-            data: {
-                completed: parsed.data.completed
-            }
+            data: updateData
         });
         res.json(patchedTask);
     } catch (error) {
